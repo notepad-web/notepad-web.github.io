@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notepad Online</title>
+    <meta name="description" content="Notepad Online Gratis, untuk menulis, menyimpan, dan mengatur catatan dengan mudah dan aman">
     
     <!-- Favicon -->
     <link rel="icon" href="https://files.catbox.moe/cruh41.jpg" type="image/jpeg">
@@ -887,7 +888,7 @@
                 const noteItem = document.createElement('div');
                 noteItem.className = `note-item ${note.id === currentNoteId ? 'active' : ''}`;
                 noteItem.innerHTML = `
-                    <div class="note-title">${note.title || 'Untitled'}</div>
+                    <div class="note-title">${note.title || 'Free'}</div>
                     <div class="note-date">${formatDate(note.updatedAt)}</div>
                     <button class="delete-btn" data-id="${note.id}">
                         <i class="fas fa-trash"></i>
@@ -1231,7 +1232,7 @@
             if (currentNoteId) {
                 const note = notes.find(n => n.id === currentNoteId);
                 if (note) {
-                    const title = note.title.trim() || 'Untitled';
+                    const title = note.title.trim() || 'Free';
                     document.title = `${title}  - Notepad Online`;
                     return;
                 }
