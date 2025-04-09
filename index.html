@@ -1,28 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notepad Online</title>
-    <meta name="description" content="Notepad Online Gratis, untuk menulis, menyimpan, dan mengatur catatan dengan mudah dan aman">
-    
-    <!-- Favicon -->
+    <title>Notepad Online Ditingkatkan</title>
+    <meta name="description" content="Notepad Online Gratis dengan fitur pintar, untuk menulis, menyimpan, dan mengatur catatan dengan mudah dan aman">
+
     <link rel="icon" href="https://files.catbox.moe/cruh41.jpg" type="image/jpeg">
-    
-    <!-- Meta Property untuk Social Media -->
-    <meta property="og:title" content="Notepad Online">
-    <meta property="og:description" content="Notepad Online modern gratis, untuk menulis, menyimpan, dan mengatur catatan dengan mudah dan aman">
+
+    <meta property="og:title" content="Notepad Online Ditingkatkan">
+    <meta property="og:description" content="Notepad Online modern gratis dengan fitur pintar untuk pengalaman menulis yang lebih baik.">
     <meta property="og:image" content="https://files.catbox.moe/og6mpt.jpg">
     <meta property="og:type" content="website">
-    <meta name="description" content="Notepad Online modern gratis, untuk menulis, menyimpan, dan mengatur catatan dengan mudah dan aman.">
-<meta name="keywords" content="notepad online, catatan online, catatan gratis, editor teks, notepad aesthetic, online notepad indonesia">
-<meta name="author" content="Notepad Online">
-    
-    <!-- Font Awesome Icons -->
+    <meta name="keywords" content="notepad online, catatan online, catatan gratis, editor teks, notepad aesthetic, online notepad indonesia, auto numbering, auto bullet, text formatter">
+    <meta name="author" content="Notepad Online (Enhanced by AI)">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
@@ -39,6 +33,8 @@
             --sidebar-width: 250px;
             --sidebar-bg: #ffffff;
             --sidebar-text: #333333;
+            --highlight-bg: rgba(255, 230, 100, 0.5); /* Warna untuk highlight pencarian */
+            --search-bg: rgba(255, 255, 255, 0.2);
         }
 
         .dark-mode {
@@ -53,13 +49,15 @@
             --placeholder-color: #666666;
             --sidebar-bg: #2d2d2d;
             --sidebar-text: #f0f0f0;
+            --highlight-bg: rgba(74, 144, 226, 0.4);
+            --search-bg: rgba(0, 0, 0, 0.3);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            transition: all 0.3s ease;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; /* Optimasi transisi */
         }
 
         body {
@@ -72,7 +70,7 @@
             flex-direction: column;
         }
 
-        /* Sidebar Styles */
+        /* --- Sidebar Styles (Existing) --- */
         .sidebar {
             width: var(--sidebar-width);
             background-color: var(--sidebar-bg);
@@ -84,7 +82,7 @@
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, width 0.3s ease; /* Tambah transisi width */
             overflow: hidden;
             z-index: 100;
         }
@@ -92,6 +90,7 @@
         .sidebar.collapsed {
             transform: translateX(-100%);
             width: 0;
+            border-right: none; /* Sembunyikan border saat collapsed */
         }
 
         .sidebar-header {
@@ -106,12 +105,37 @@
         .sidebar-title {
             font-weight: 600;
             white-space: nowrap;
+            overflow: hidden; /* Pastikan judul tidak keluar saat sidebar menyempit */
+            text-overflow: ellipsis;
         }
 
         .sidebar-content {
             flex: 1;
             overflow-y: auto;
             padding: 10px 0;
+        }
+
+        .search-container { /* Search di Sidebar */
+            position: relative;
+            margin: 10px;
+        }
+
+        #searchNotes {
+            width: 100%;
+            padding: 8px 30px 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+        }
+
+        .search-container i {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--placeholder-color);
+            pointer-events: none; /* Agar icon tidak menghalangi klik input */
         }
 
         .note-item {
@@ -121,8 +145,9 @@
             justify-content: space-between;
             align-items: center;
             border-radius: 4px;
-            margin: 0 5px;
+            margin: 2px 5px; /* Sedikit penyesuaian margin */
             transition: background-color 0.2s ease;
+            white-space: nowrap; /* Cegah item wrap */
         }
 
         .note-item:hover {
@@ -139,13 +164,14 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            margin-right: 10px; /* Jarak antara judul dan tanggal */
         }
 
         .note-item .note-date {
             font-size: 0.8rem;
             opacity: 0.7;
-            margin-left: 10px;
-            white-space: nowrap;
+            margin-left: auto; /* Dorong tanggal ke kanan */
+             white-space: nowrap;
         }
 
         .note-item .delete-btn {
@@ -153,7 +179,10 @@
             opacity: 0;
             transition: opacity 0.2s ease;
             padding: 5px;
-            margin-left: 5px;
+            margin-left: 8px; /* Jarak dari tanggal */
+            background: none; /* Hapus background default */
+            border: none; /* Hapus border default */
+            cursor: pointer;
         }
 
         .note-item:hover .delete-btn {
@@ -176,16 +205,16 @@
         }
 
         .add-note-btn:hover {
-            background-color: #3a7bc8;
+            background-color: #3a7bc8; /* Warna hover */
         }
 
-        /* Main Content */
+        /* --- Main Content Styles (Sebagian Besar Existing) --- */
         .main-content {
             flex: 1;
             display: flex;
             flex-direction: column;
             transition: margin-left 0.3s ease;
-            margin-left: 250px;
+            margin-left: var(--sidebar-width); /* Gunakan variabel */
         }
 
         .sidebar.collapsed + .main-content {
@@ -198,7 +227,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            min-height: calc(100vh - 60px);
+            min-height: calc(100vh - 60px); /* Adjust height calculation if footer height changes */
         }
 
         .header {
@@ -220,7 +249,7 @@
             border-radius: 8px;
             background-color: rgba(255, 255, 255, 0.15);
             color: white;
-            margin-bottom: 12px;
+            margin-bottom: 15px; /* Tambah jarak bawah */
         }
 
         .note-title-input::placeholder {
@@ -231,154 +260,141 @@
         /* Toolbar Layout */
         .toolbar {
             display: flex;
-            gap: 10px;
+            gap: 8px; /* Sedikit kurangi gap */
             flex-wrap: wrap;
             align-items: center;
+            margin-bottom: 10px; /* Jarak ke editor search */
         }
+
+        /* Editor Search Bar */
+        .editor-search-bar {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+            align-items: center;
+            background-color: var(--search-bg);
+            padding: 5px;
+            border-radius: 6px;
+            display: none; /* Sembunyikan secara default */
+        }
+
+        .editor-search-bar input[type="text"] {
+            flex-grow: 1;
+            padding: 6px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+
+        .editor-search-bar button {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background-color 0.2s ease;
+        }
+         .dark-mode .editor-search-bar button {
+             background-color: rgba(0, 0, 0, 0.2);
+             color: var(--text-color);
+         }
+
+        .editor-search-bar button:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+        }
+        .dark-mode .editor-search-bar button:hover {
+            background-color: rgba(0, 0, 0, 0.35);
+        }
+
+
+        .editor-search-bar button i {
+             margin-right: 3px;
+        }
+
+         #searchResultCount {
+             font-size: 0.8rem;
+             color: var(--placeholder-color);
+             margin: 0 5px;
+             min-width: 50px; /* Agar tidak geser saat angka berubah */
+             text-align: right;
+         }
 
         /* Text Controls Container */
         .text-controls {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px; /* Sesuaikan gap */
+            margin-left: auto; /* Dorong ke kanan */
         }
 
-        /* Text Size Controls */
-        .text-size-controls {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .text-size-btn {
-            background-color: rgba(255, 255, 255, 0.15);
-            color: white;
+        /* Individual Controls (Existing Styles Mostly Reused) */
+        .btn, .text-size-btn, .font-weight-btn, .undo-btn, .redo-btn, .new-note-btn, .copy-btn {
+            padding: 8px 12px; /* Ukuran tombol seragam */
             border: none;
             border-radius: 6px;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            display: inline-flex; /* Agar icon dan text sejajar */
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem; /* Ukuran font tombol */
+            font-weight: 500;
             transition: all 0.2s ease;
+            white-space: nowrap; /* Pastikan teks tidak wrap */
         }
 
-        .text-size-btn:hover {
+        .btn:hover, .text-size-btn:hover, .font-weight-btn:hover, .undo-btn:hover, .redo-btn:hover, .new-note-btn:hover, .copy-btn:hover {
             background-color: rgba(255, 255, 255, 0.25);
             transform: translateY(-1px);
         }
+         .btn i, .text-size-btn i, .font-weight-btn i, .undo-btn i, .redo-btn i, .new-note-btn i, .copy-btn i {
+             font-size: 1em; /* Ukuran icon relatif */
+         }
+
+        /* Ukuran spesifik untuk tombol kecil */
+        .text-size-btn, .undo-btn, .redo-btn, .new-note-btn {
+            width: 34px; /* Ukuran tetap */
+            height: 34px;
+            justify-content: center; /* Pusatkan icon */
+            padding: 0; /* Hapus padding agar pas */
+        }
+        .text-size-btn i.fa-minus, .text-size-btn i.fa-plus {
+             font-size: 0.6em;
+             margin-left: -3px;
+         }
 
         .text-size-display {
             font-size: 0.9rem;
             min-width: 40px;
             text-align: center;
             color: white;
-        }
-
-        /* Font Weight Button */
-        .font-weight-btn {
-            background-color: rgba(255, 255, 255, 0.15);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 5px 10px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .font-weight-btn:hover {
-            background-color: rgba(255, 255, 255, 0.25);
-            transform: translateY(-1px);
+            padding: 5px 0; /* Vertikal padding */
         }
 
         .font-weight-btn.active {
             background-color: rgba(255, 255, 255, 0.3);
-            font-weight: bold;
-        }
-
-        /* Undo/Redo Buttons */
-        .undo-redo-controls {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .undo-btn, .redo-btn, .new-note-btn {
-            background-color: rgba(255, 255, 255, 0.15);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .undo-btn:hover, .redo-btn:hover, .new-note-btn:hover {
-            background-color: rgba(255, 255, 255, 0.25);
-            transform: translateY(-1px);
         }
 
         .undo-btn:disabled, .redo-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            transform: none; /* Jangan transform saat disabled */
         }
 
-        /* Copy Button */
-        .copy-btn {
-            background-color: rgba(255, 255, 255, 0.15);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 5px 10px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-            transition: all 0.2s ease;
+        /* Upload button styling */
+        .btn input[type="file"] {
+            display: none; /* Sembunyikan input file asli */
         }
 
-        .copy-btn:hover {
-            background-color: rgba(255, 255, 255, 0.25);
-            transform: translateY(-1px);
-        }
-
-        /* Standard Buttons */
-        .btn {
-            padding: 10px 18px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            background-color: rgba(255, 255, 255, 0.15);
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.95rem;
-            font-weight: 500;
-        }
-
-        .btn:hover {
-            background-color: rgba(255, 255, 255, 0.25);
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn i {
-            margin-right: 6px;
-            font-size: 0.9em;
-        }
-
+        /* Editor Styles */
         .editor {
             width: 100%;
-            min-height: 70vh;
+            min-height: 65vh; /* Sesuaikan tinggi minimal */
             padding: 22px;
             font-size: 16px;
             font-weight: normal;
@@ -388,7 +404,10 @@
             color: var(--text-color);
             resize: vertical;
             line-height: 1.7;
-            flex: 1;
+            flex: 1; /* Agar editor mengisi sisa ruang */
+            transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease; /* Transisi warna */
+            font-family: 'Inter', sans-serif; /* Pastikan font konsisten */
+            margin-top: 10px; /* Jarak dari toolbar/search */
         }
 
         .editor:focus {
@@ -402,22 +421,24 @@
             opacity: 0.7;
         }
 
-        /* Footer */
+        /* Footer Styles */
         .footer {
             text-align: center;
             padding: 15px;
             color: var(--text-color);
             font-size: 0.9rem;
-            margin-top: auto;
+            margin-top: auto; /* Dorong ke bawah */
+            border-top: 1px solid var(--border-color); /* Garis pemisah tipis */
         }
 
-        /* Control Buttons Container */
+        /* Control Buttons Container (Floating) */
         .control-buttons {
             position: fixed;
             bottom: 24px;
             right: 24px;
             display: flex;
-            gap: 10px;
+            flex-direction: column; /* Susun vertikal */
+            gap: 12px; /* Jarak antar tombol */
             z-index: 100;
         }
 
@@ -431,17 +452,18 @@
             font-size: 1.2rem;
             background-color: var(--primary-color);
             color: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15); /* Shadow lebih jelas */
             cursor: pointer;
             border: none;
             transition: all 0.3s ease;
         }
 
         .control-btn:hover {
-            transform: scale(1.05);
+            transform: scale(1.08); /* Efek hover lebih besar */
+            background-color: #3a7bc8; /* Warna hover */
         }
 
-        /* Toast and Save Status */
+        /* Toast and Save Status Styles (Existing) */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -451,9 +473,9 @@
             color: white;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            transform: translateY(100px);
+            transform: translateY(120px); /* Mulai lebih jauh */
             opacity: 0;
-            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); /* Transisi lebih smooth */
             z-index: 1000;
             font-weight: 500;
             display: flex;
@@ -479,74 +501,84 @@
             border-radius: 20px;
             font-size: 0.8rem;
             opacity: 0;
-            transform: translateY(-10px);
+            transform: translateY(-15px); /* Mulai sedikit di atas */
             transition: all 0.3s ease;
+            color: var(--text-color); /* Agar teks terlihat di light/dark mode */
+            z-index: 999; /* Dibawah toast */
+        }
+        .dark-mode .save-status {
+             background-color: rgba(255, 255, 255, 0.1);
         }
 
         .save-status.show {
             opacity: 1;
             transform: translateY(0);
         }
-
-        /* Search Container */
-        .search-container {
-            position: relative;
-            margin: 10px;
+        .save-status i {
+             margin-right: 5px;
         }
 
-        #searchNotes {
-            width: 100%;
-            padding: 8px 30px 8px 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            background-color: var(--secondary-color);
-            color: var(--text-color);
+        /* --- Responsive Styles (Existing + Adjustments) --- */
+        @media (max-width: 992px) { /* Breakpoint baru untuk tablet */
+             .text-controls {
+                 margin-left: 0; /* Hapus margin auto agar tidak pindah baris terlalu cepat */
+             }
         }
 
-        .search-container i {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--placeholder-color);
-        }
-
-        /* Mobile Responsiveness */
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed;
-                left: -100%;
+                left: -100%; /* Mulai dari luar layar */
                 z-index: 1000;
                 height: 100vh;
-                transition: left 0.3s ease;
-                width: 80%;
+                transition: transform 0.3s ease; /* Ganti transisi ke transform */
+                width: 80%; /* Lebar sidebar mobile */
+                transform: translateX(-100%); /* State awal tersembunyi */
+                border-right: 1px solid var(--border-color); /* Tampilkan border lagi */
             }
 
             .sidebar.show-mobile {
-                left: 0;
+                transform: translateX(0); /* Munculkan sidebar */
             }
 
             .main-content {
-                margin-left: 0 !important;
+                margin-left: 0 !important; /* Pastikan tidak ada margin */
+                 transition: none; /* Hapus transisi margin */
             }
 
             .container {
                 padding: 15px;
-                min-height: calc(100vh - 90px);
+                min-height: calc(100vh - 70px); /* Recalculate height */
             }
-            
+
             .note-title-input {
                 font-size: 1.2rem;
                 padding: 12px;
             }
-            
+
+             .toolbar {
+                 gap: 5px; /* Kurangi gap di mobile */
+             }
+
             .btn, .font-weight-btn, .copy-btn {
-                padding: 8px 12px;
-                font-size: 0.9rem;
+                padding: 8px 10px;
+                font-size: 0.85rem;
             }
-            
+             .text-controls {
+                 /* Biarkan default flow */
+                 gap: 5px;
+             }
+             .text-size-btn, .undo-btn, .redo-btn, .new-note-btn {
+                 width: 30px;
+                 height: 30px;
+             }
+             .text-size-display {
+                 min-width: 35px;
+                 font-size: 0.85rem;
+             }
+
             .editor {
-                min-height: 60vh;
+                min-height: 55vh; /* Kurangi tinggi editor di mobile */
                 font-size: 1rem;
                 padding: 18px;
             }
@@ -557,8 +589,8 @@
             }
 
             .control-buttons {
-                bottom: 20px;
-                right: 20px;
+                bottom: 15px; /* Naikkan sedikit */
+                right: 15px;
             }
 
             .control-btn {
@@ -567,57 +599,71 @@
                 font-size: 1.1rem;
             }
 
-            .text-controls {
-                margin-left: 0;
-                width: 100%;
-                justify-content: flex-end;
-            }
-
             .footer {
                 padding: 10px;
                 font-size: 0.8rem;
             }
+             .editor-search-bar {
+                 flex-wrap: wrap; /* Agar bisa wrap jika tidak cukup */
+             }
+             .editor-search-bar input[type="text"] {
+                 font-size: 0.85rem;
+             }
+             .editor-search-bar button {
+                 font-size: 0.75rem;
+             }
         }
 
         @media (max-width: 480px) {
-            .btn-text, .font-weight-btn span, .copy-btn span {
+            /* Sembunyikan teks pada tombol utama di layar sangat kecil */
+            .btn .btn-text, .font-weight-btn .btn-text, .copy-btn .btn-text {
                 display: none;
             }
-            
+
             .btn i, .font-weight-btn i, .copy-btn i {
-                margin-right: 0;
+                margin-right: 0; /* Hapus margin jika hanya icon */
             }
-            
-            .text-size-display {
-                min-width: 30px;
-                font-size: 0.8rem;
+            .btn, .font-weight-btn, .copy-btn {
+                padding: 8px; /* Padding seragam untuk icon */
+                 gap: 0;
             }
+
+             .text-size-display {
+                 min-width: 30px;
+                 font-size: 0.8rem;
+             }
+             .toast {
+                 left: 10px;
+                 right: 10px; /* Agar toast tidak terlalu lebar */
+                 bottom: 10px;
+                 padding: 12px 18px;
+             }
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-title">Catatan Saya</div>
+            <button class="control-btn" id="closeSidebarBtn" style="display: none; width: 30px; height: 30px; font-size: 1rem; background: none; color: var(--sidebar-text); box-shadow: none;">
+                 <i class="fas fa-times"></i>
+             </button>
         </div>
-        
+
         <div class="search-container">
-            <input type="text" id="searchNotes" placeholder="Cari catatan...">
+            <input type="text" id="searchNotes" placeholder="Cari judul catatan...">
             <i class="fas fa-search"></i>
         </div>
-        
+
         <div class="sidebar-content" id="notesList">
-            <!-- Notes will be listed here -->
-        </div>
-        
+            </div>
+
         <button class="add-note-btn" id="addNoteBtn">
             <i class="fas fa-plus"></i>
             <span>Catatan Baru</span>
         </button>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content">
         <div class="container">
             <div class="header">
@@ -625,78 +671,76 @@
                 <div class="toolbar">
                     <button class="btn" onclick="saveNote()" aria-label="Simpan catatan">
                         <i class="fas fa-save"></i>
-                        <span class="btn-text">Simpan (Ctrl+S)</span>
-                    </button>
-                    
-                        <!-- Font Weight Toggle -->
-    <button class="font-weight-btn" id="fontWeightBtn" aria-label="Toggle font weight">
-        <i class="fas fa-bold"></i>
-        <span class="btn-text">Bold</span>
-    </button>
-               
-                    <!-- New Note Button -->
-                    <button class="new-note-btn" id="newNoteBtn" aria-label="Catatan baru" title="Catatan Baru (Ctrl+N)">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                    
-                    <!-- Undo/Redo Controls -->
-                    <div class="undo-redo-controls">
-                        <button class="undo-btn" id="undoBtn" aria-label="Undo" disabled>
-                            <i class="fas fa-undo"></i>
+                        <span class="btn-text">Simpan</span> </button>
+                     <button class="new-note-btn" id="newNoteBtn" aria-label="Catatan baru" title="Catatan Baru (Ctrl+N)">
+                         <i class="fas fa-plus"></i>
+                     </button>
+
+                    <div class="undo-redo-controls" style="display: inline-flex; gap: 5px;">
+                        <button class="undo-btn" id="undoBtn" aria-label="Undo" title="Undo (Ctrl+Z)" disabled>
+                             <i class="fas fa-undo"></i>
                         </button>
-                        <button class="redo-btn" id="redoBtn" aria-label="Redo" disabled>
-                            <i class="fas fa-redo"></i>
+                        <button class="redo-btn" id="redoBtn" aria-label="Redo" title="Redo (Ctrl+Y/Shift+Z)" disabled>
+                             <i class="fas fa-redo"></i>
                         </button>
                     </div>
-                    
-<!-- Text Controls -->
-<div class="text-controls">
+
+                    <button class="btn" id="searchBtn" aria-label="Cari dalam teks" title="Cari dalam teks (Ctrl+F)">
+                        <i class="fas fa-search"></i>
+                        <span class="btn-text">Cari</span>
+                    </button>
+                    <button class="btn" id="formatTextBtn" aria-label="Format Teks" title="Rapikan Teks">
+                        <i class="fas fa-magic"></i> <span class="btn-text">Rapikan</span>
+                    </button>
 
 
-    <!-- Copy Button -->
-    <button class="copy-btn" id="copyBtn" aria-label="Salin teks">
-        <i class="far fa-copy"></i>
-        <span class="btn-text">Salin</span>
-    </button>
-    
-    <!-- Font Size Controls --> <!-- DIPINDAH KE SINI -->
-    <div class="text-size-controls">
-        <button class="text-size-btn" id="decreaseFontBtn" aria-label="Perkecil teks">
-            <i class="fas fa-font"></i><i class="fas fa-minus" style="font-size: 0.6em; margin-left: -3px;"></i>
-        </button>
-        <span class="text-size-display" id="fontSizeDisplay">16px</span>
-        <button class="text-size-btn" id="increaseFontBtn" aria-label="Perbesar teks">
-            <i class="fas fa-font"></i><i class="fas fa-plus" style="font-size: 0.6em; margin-left: -3px;"></i>
-        </button>
-    </div>
-    
-    <!-- Download Button -->
-    <button class="btn" onclick="downloadNote()" aria-label="Download catatan">
-        <i class="fas fa-download"></i>
-        <span class="btn-text">Download</span>
-    </button>
-    
-    <!-- Upload Button -->
-    <label class="btn" aria-label="Upload file teks">
-        <i class="fas fa-upload"></i>
-        <span class="btn-text">Unggah</span>
-        <input type="file" hidden accept=".txt" onchange="uploadNote(event)">
-    </label>
-</div>
+                    <div class="text-controls">
+                         <button class="font-weight-btn" id="fontWeightBtn" aria-label="Toggle Bold" title="Bold (Ctrl+B)">
+                             <i class="fas fa-bold"></i>
+                             <span class="btn-text">Bold</span>
+                         </button>
+                        <div class="text-size-controls" style="display: inline-flex; align-items: center; gap: 5px;">
+                            <button class="text-size-btn" id="decreaseFontBtn" aria-label="Perkecil teks">
+                                <i class="fas fa-font"></i><i class="fas fa-minus"></i>
+                            </button>
+                            <span class="text-size-display" id="fontSizeDisplay">16px</span>
+                            <button class="text-size-btn" id="increaseFontBtn" aria-label="Perbesar teks">
+                                <i class="fas fa-font"></i><i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                         <button class="copy-btn" id="copyBtn" aria-label="Salin semua teks" title="Salin Semua (Ctrl+Shift+C)">
+                            <i class="far fa-copy"></i>
+                            <span class="btn-text">Salin</span>
+                        </button>
+                        <button class="btn" onclick="downloadNote()" aria-label="Download catatan">
+                            <i class="fas fa-download"></i>
+                            <span class="btn-text">Unduh</span>
+                        </button>
+                        <label class="btn" aria-label="Upload file teks">
+                            <i class="fas fa-upload"></i>
+                             <span class="btn-text">Unggah</span>
+                            <input type="file" hidden accept=".txt" onchange="uploadNote(event)">
+                        </label>
+                    </div>
                 </div>
+                 <div class="editor-search-bar" id="editorSearchBar">
+                     <input type="text" id="editorSearchInput" placeholder="Cari teks dalam catatan...">
+                     <button id="searchPrevBtn"><i class="fas fa-chevron-up"></i> Prev</button>
+                     <button id="searchNextBtn">Next <i class="fas fa-chevron-down"></i></button>
+                     <span id="searchResultCount">0/0</span>
+                     <button id="closeSearchBtn"><i class="fas fa-times"></i></button>
+                 </div>
             </div>
-            <textarea class="editor" id="editor" placeholder="Mulai mengetik di sini... ✨ Dan Gunakan Mode Desktop Untuk Pengalaman Yang Lebih Baik" aria-label="Editor catatan"></textarea>
-            
-            <!-- Footer -->
+            <textarea class="editor" id="editor" placeholder="Mulai mengetik di sini... ✨\nFitur baru:\n- Ketik '1. ' lalu Enter untuk nomor otomatis.\n- Ketik '- ' atau '* ' lalu Enter untuk bullet otomatis.\n- Ketik ( [ { \" ' akan otomatis ditutup.\n- Shift+Enter untuk baris baru tanpa list.\n- Gunakan tombol 'Cari' & 'Rapikan' di toolbar." aria-label="Editor catatan"></textarea>
+
             <div class="footer">
-                <span id="wordCount">0 kata</span> | 
+                <span id="wordCount">0 kata</span> |
                 <span id="charCount">0 karakter</span>
-                &copy; 2025 Notepad Online | Fawwaz Dzaky
+                &copy; 2025 Notepad Online | Ditingkatkan oleh AI
             </div>
         </div>
     </div>
 
-    <!-- Control Buttons -->
     <div class="control-buttons">
         <button class="control-btn" id="menuToggleBtn" aria-label="Toggle menu">
             <i class="fas fa-bars"></i>
@@ -713,12 +757,13 @@
     </div>
 
     <script>
-        // DOM Elements
+        // === DOM Elements ===
         const sidebar = document.getElementById('sidebar');
         const menuToggleBtn = document.getElementById('menuToggleBtn');
+        const closeSidebarBtn = document.getElementById('closeSidebarBtn'); // Tombol close baru
         const notesList = document.getElementById('notesList');
-        const addNoteBtn = document.getElementById('addNoteBtn');
-        const newNoteBtn = document.getElementById('newNoteBtn');
+        const addNoteBtn = document.getElementById('addNoteBtn'); // Tombol di sidebar
+        const newNoteBtn = document.getElementById('newNoteBtn'); // Tombol di toolbar
         const noteTitle = document.getElementById('noteTitle');
         const editor = document.getElementById('editor');
         const themeToggle = document.getElementById('themeToggle');
@@ -731,77 +776,145 @@
         const copyBtn = document.getElementById('copyBtn');
         const undoBtn = document.getElementById('undoBtn');
         const redoBtn = document.getElementById('redoBtn');
-        
+        const searchNotesInput = document.getElementById('searchNotes'); // Search di sidebar
+        const wordCountEl = document.getElementById('wordCount');
+        const charCountEl = document.getElementById('charCount');
+
+        // --- Fitur Baru Elements ---
+        const searchBtn = document.getElementById('searchBtn'); // Tombol search di toolbar
+        const formatTextBtn = document.getElementById('formatTextBtn'); // Tombol format
+        const editorSearchBar = document.getElementById('editorSearchBar');
+        const editorSearchInput = document.getElementById('editorSearchInput');
+        const searchPrevBtn = document.getElementById('searchPrevBtn');
+        const searchNextBtn = document.getElementById('searchNextBtn');
+        const searchResultCount = document.getElementById('searchResultCount');
+        const closeSearchBtn = document.getElementById('closeSearchBtn');
+
+        // === State Variables ===
         let notes = [];
         let currentNoteId = null;
-        let typingTimer;
+        let typingTimer; // Untuk debounce/throttle word count & save history
         let history = [];
         let historyIndex = -1;
         let isSaving = false;
         let autoSaveInterval;
+        let editorSearchState = { // State untuk pencarian dalam editor
+            matches: [],
+            currentIndex: -1,
+            searchTerm: '',
+            regex: null // Store the regex for efficiency
+        };
+        let ignoreInputEvent = false; // Flag untuk mencegah trigger event input saat modifikasi programatik
+        let ignoreHistorySave = false; // Flag untuk mencegah penyimpanan history ganda dari auto-feature
 
-        // Initialize the app
+        // === Initialization ===
         function init() {
             loadNotes();
             setupEventListeners();
             updateDocumentTitle();
             updateWordCount();
-            
+            loadPreferences(); // Load theme, sidebar, font settings
+            startAutoSave();
+            checkMobileView(); // Cek tampilan mobile saat load
+            setupSidebarSearch(); // Setup listener search sidebar
+            // Initialize history for the first loaded note
+             if (currentNoteId) {
+                 const note = notes.find(n => n.id === currentNoteId);
+                 if (note) {
+                     history = [{ content: note.content, cursorPos: 0 }];
+                     historyIndex = 0;
+                     updateUndoRedoButtons();
+                 }
+             }
+        }
+
+        function loadPreferences() {
             // Load theme preference
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark-mode') {
                 document.body.classList.add('dark-mode');
                 themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                 document.body.classList.remove('dark-mode'); // Ensure light mode if not dark
+                 themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
             }
-            
-            // Load sidebar state
-            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (isCollapsed) {
-                sidebar.classList.add('collapsed');
+
+            // Load sidebar state (only for desktop)
+            if (window.innerWidth > 768) {
+                 const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+                 if (isCollapsed) {
+                    sidebar.classList.add('collapsed');
+                    document.querySelector('.main-content').style.marginLeft = '0';
+                 } else {
+                     sidebar.classList.remove('collapsed');
+                     document.querySelector('.main-content').style.marginLeft = 'var(--sidebar-width)';
+                 }
+            } else {
+                sidebar.classList.remove('collapsed'); // Jangan collapsed di mobile
+                sidebar.classList.remove('show-mobile'); // Pastikan tertutup awal
+                document.querySelector('.main-content').style.marginLeft = '0'; // Selalu 0 di mobile
             }
-            
+
+
             // Load font size preference
-            const savedFontSize = localStorage.getItem('editorFontSize');
-            if (savedFontSize) {
-                editor.style.fontSize = savedFontSize;
-                fontSizeDisplay.textContent = savedFontSize;
-            }
-            
+            const savedFontSize = localStorage.getItem('editorFontSize') || '16px'; // Default ke 16px
+            editor.style.fontSize = savedFontSize;
+            fontSizeDisplay.textContent = savedFontSize;
+
+
             // Load font weight preference
-            const savedFontWeight = localStorage.getItem('editorFontWeight');
-            if (savedFontWeight) {
-                editor.style.fontWeight = savedFontWeight;
-                fontWeightBtn.classList.toggle('active', savedFontWeight === 'bold');
-            }
-            
-            // Start auto-save with throttling
-            startAutoSave();
+            const savedFontWeight = localStorage.getItem('editorFontWeight') || 'normal'; // Default ke normal
+            editor.style.fontWeight = savedFontWeight;
+            fontWeightBtn.classList.toggle('active', savedFontWeight === 'bold');
+
         }
 
-        // History management
-        function saveHistory() {
-            // Don't save history if we're currently undoing/redoing
-            if (editor.dataset.isRestoring) return;
-            
-            // Remove any history after current index
-            history = history.slice(0, historyIndex + 1);
-            
-            // Add new state to history (with limited size)
-            const state = {
-                content: editor.value,
-                cursorPos: editor.selectionStart
-            };
-            
-            history.push(state);
-            historyIndex = history.length - 1;
-            
-            // Limit history size to prevent memory issues
-            if (history.length > 50) {
-                history.shift();
-                historyIndex--;
-            }
-            
-            updateUndoRedoButtons();
+         function checkMobileView() {
+             const isMobile = window.innerWidth <= 768;
+             closeSidebarBtn.style.display = isMobile ? 'block' : 'none';
+             if (!isMobile && sidebar.classList.contains('show-mobile')) {
+                 // Jika layar membesar dan sidebar mobile terbuka, tutup dan terapkan state desktop
+                 sidebar.classList.remove('show-mobile');
+                 loadPreferences(); // Reload preferences untuk margin/collapse
+             } else if (isMobile) {
+                 sidebar.classList.remove('collapsed'); // Hapus state collapsed di mobile
+                 document.querySelector('.main-content').style.marginLeft = '0';
+             }
+         }
+
+        // === History Management (Undo/Redo) ===
+        function saveHistory(forceSave = false) {
+             if (ignoreHistorySave) return; // Skip if flagged
+
+             // Debounce saving history slightly
+             clearTimeout(typingTimer);
+             typingTimer = setTimeout(() => {
+                const currentState = { content: editor.value, cursorPos: editor.selectionStart };
+
+                // Jangan simpan state yang sama persis berturut-turut kecuali dipaksa
+                if (historyIndex >= 0 && currentState.content === history[historyIndex]?.content && !forceSave) {
+                    // Update cursor position in the last state if only cursor moved
+                     if (currentState.cursorPos !== history[historyIndex].cursorPos) {
+                         history[historyIndex].cursorPos = currentState.cursorPos;
+                     }
+                    return;
+                }
+
+                // Hapus history setelah index saat ini (jika ada undo sebelumnya)
+                if (historyIndex < history.length - 1) {
+                    history = history.slice(0, historyIndex + 1);
+                }
+
+                history.push(currentState);
+                historyIndex++;
+
+                // Batasi ukuran history
+                if (history.length > 100) { // Tingkatkan batas history
+                    history.shift();
+                    historyIndex--;
+                }
+                updateUndoRedoButtons();
+             }, 50); // Sedikit delay untuk grouping ketikan cepat
         }
 
         function undo() {
@@ -819,32 +932,26 @@
         }
 
         function applyHistoryState() {
-            editor.dataset.isRestoring = 'true';
-            
+            if (!history[historyIndex]) return; // Guard clause
+
+            ignoreInputEvent = true; // Set flag sebelum mengubah value
+             ignoreHistorySave = true; // Prevent this change from being saved back immediately
             const state = history[historyIndex];
             editor.value = state.content;
-            
-            // Restore cursor position
+
+            // Restore cursor position (pakai setTimeout untuk memastikan DOM update)
             setTimeout(() => {
-                editor.selectionStart = state.cursorPos;
-                editor.selectionEnd = state.cursorPos;
-                delete editor.dataset.isRestoring;
+                try {
+                     editor.selectionStart = state.cursorPos;
+                     editor.selectionEnd = state.cursorPos;
+                     editor.focus(); // Kembalikan fokus ke editor
+                } catch (e) { console.error("Error setting selection:", e); }
+                updateUndoRedoButtons();
+                updateWordCount(); // Update count setelah undo/redo
+                 saveCurrentNoteData(); // Simpan state baru ke note setelah undo/redo
+                ignoreInputEvent = false; // Reset flag setelah selesai
+                 ignoreHistorySave = false;
             }, 0);
-            
-            updateUndoRedoButtons();
-            
-            // Save to note if applicable
-            if (currentNoteId) {
-                const noteIndex = notes.findIndex(n => n.id === currentNoteId);
-                if (noteIndex !== -1) {
-                    notes[noteIndex].content = editor.value;
-                    notes[noteIndex].updatedAt = new Date().toISOString();
-                    saveNotes();
-                    renderNotesList();
-                }
-            }
-            
-            updateWordCount();
         }
 
         function updateUndoRedoButtons() {
@@ -852,249 +959,336 @@
             redoBtn.disabled = historyIndex >= history.length - 1;
         }
 
-        // Load notes from localStorage
+        // === Note Management (CRUD) ===
         function loadNotes() {
             const savedNotes = localStorage.getItem('notes');
+            let loadedSuccessfully = false;
             if (savedNotes) {
                 try {
                     notes = JSON.parse(savedNotes);
-                    renderNotesList();
-                    
-                    // Load the first note if available
-                    if (notes.length > 0) {
-                        loadNote(notes[0].id);
-                    } else {
-                        createNewNote();
+                    // Pastikan updatedAt ada, jika tidak tambahkan default
+                    notes.forEach(note => {
+                        if (!note.updatedAt) note.updatedAt = note.createdAt || new Date(0).toISOString();
+                        if (!note.createdAt) note.createdAt = new Date(0).toISOString(); // Ensure createdAt also exists
+                    });
+                     renderNotesList();
+                    // Coba load note terakhir yang dibuka, atau yang terbaru
+                     const lastOpenedId = localStorage.getItem('lastOpenedNoteId');
+                    if (lastOpenedId && notes.some(n => n.id === lastOpenedId)) {
+                         loadNote(lastOpenedId);
+                         loadedSuccessfully = true;
+                    } else if (notes.length > 0) {
+                        // Load note terbaru berdasarkan updatedAt
+                         const latestNote = [...notes].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0];
+                         loadNote(latestNote.id);
+                         loadedSuccessfully = true;
                     }
                 } catch (e) {
                     console.error("Error loading notes:", e);
+                    showToast('Gagal memuat catatan lama. Data mungkin korup.', true);
                     notes = [];
-                    createNewNote();
                 }
-            } else {
-                createNewNote();
+            }
+
+            if (!loadedSuccessfully) {
+                createNewNote(); // Buat note baru jika tidak ada atau gagal load
             }
         }
 
-        // Render notes list in sidebar
         function renderNotesList() {
+            const searchTerm = searchNotesInput.value.toLowerCase(); // Dapatkan term pencarian sidebar
             notesList.innerHTML = '';
-            
-            // Sort notes by updatedAt (newest first)
-            const sortedNotes = [...notes].sort((a, b) => 
-                new Date(b.updatedAt) - new Date(a.updatedAt));
-            
+             // Sort notes by updatedAt (newest first)
+            const sortedNotes = [...notes].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+             let hasVisibleNotes = false;
             sortedNotes.forEach(note => {
+                const noteTitleText = note.title.trim() || 'Tanpa Judul'; // Default title
+                // Filter berdasarkan pencarian sidebar
+                if (searchTerm && !noteTitleText.toLowerCase().includes(searchTerm)) {
+                    return; // Lewati note ini jika tidak cocok
+                }
+                 hasVisibleNotes = true; // Setidaknya satu note terlihat
+
                 const noteItem = document.createElement('div');
                 noteItem.className = `note-item ${note.id === currentNoteId ? 'active' : ''}`;
+                noteItem.dataset.noteId = note.id; // Tambahkan data-id
                 noteItem.innerHTML = `
-                    <div class="note-title">${note.title || 'Untitled'}</div>
+                    <div class="note-title" title="${noteTitleText}\nDiperbarui: ${new Date(note.updatedAt).toLocaleString('id-ID')}">${noteTitleText}</div>
                     <div class="note-date">${formatDate(note.updatedAt)}</div>
-                    <button class="delete-btn" data-id="${note.id}">
+                    <button class="delete-btn" data-id="${note.id}" aria-label="Hapus catatan ${noteTitleText}" title="Hapus catatan">
                         <i class="fas fa-trash"></i>
                     </button>
                 `;
-                
-                noteItem.addEventListener('click', () => loadNote(note.id));
-                
+
+                // Klik pada item note (hindari klik tombol delete)
+                noteItem.addEventListener('click', (e) => {
+                     if (!e.target.closest('.delete-btn')) { // Pastikan bukan tombol delete yang diklik
+                         loadNote(note.id);
+                         if (window.innerWidth <= 768) { // Tutup sidebar di mobile setelah pilih note
+                             sidebar.classList.remove('show-mobile');
+                         }
+                     }
+                 });
+
+                // Klik tombol delete
                 const deleteBtn = noteItem.querySelector('.delete-btn');
                 deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
+                    e.stopPropagation(); // Hentikan event bubbling ke note item
                     deleteNote(note.id);
                 });
-                
+
                 notesList.appendChild(noteItem);
             });
+             // Tampilkan pesan jika tidak ada note yang cocok dengan pencarian atau tidak ada note sama sekali
+             if (!hasVisibleNotes && searchTerm) {
+                 notesList.innerHTML = '<div style="padding: 15px; text-align: center; opacity: 0.7;">Tidak ada catatan ditemukan.</div>';
+             } else if (notes.length === 0) {
+                  notesList.innerHTML = '<div style="padding: 15px; text-align: center; opacity: 0.7;">Belum ada catatan. Klik "Catatan Baru".</div>';
+             }
         }
 
-        // Format date for display
         function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('id-ID', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric'
-            });
+            try {
+                const date = new Date(dateString);
+                 const now = new Date();
+                 const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+
+                 if (diffDays < 1 && date.getDate() === now.getDate()) {
+                     // Today: show time
+                     return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                 } else if (diffDays < 7) {
+                     // This week: show day name
+                     return date.toLocaleDateString('id-ID', { weekday: 'short' });
+                 } else {
+                     // Older: show date
+                     return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' /*, year: 'numeric'*/ });
+                 }
+            } catch (e) {
+                return 'Invalid Date';
+            }
         }
 
-        // Create a new note
-        function createNewNote() {
+        function createNewNote(content = '', title = '') { // Allow initial content/title
+            // Simpan note sebelumnya sebelum buat baru
+            saveCurrentNoteData();
+
             const newNote = {
                 id: Date.now().toString(),
-                title: '',
-                content: '',
+                title: title,
+                content: content,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
-            
-            notes.unshift(newNote);
-            saveNotes();
-            loadNote(newNote.id);
-            renderNotesList();
-            
-            // Focus on title input
-            setTimeout(() => {
-                noteTitle.focus();
-            }, 100);
-            
+            notes.unshift(newNote); // Tambah ke awal array
+            saveNotesToStorage(); // Simpan ke storage
+            loadNote(newNote.id); // Langsung load note baru
+            renderNotesList(); // Update tampilan list
+
+            // Reset search & scroll ke atas di sidebar
+             searchNotesInput.value = '';
+             notesList.scrollTop = 0;
+
+            setTimeout(() => noteTitle.focus(), 50); // Fokus ke judul
             showToast('Catatan baru dibuat');
         }
 
-        // Load note into editor
         function loadNote(noteId) {
             const note = notes.find(n => n.id === noteId);
             if (note) {
-                currentNoteId = noteId;
-                noteTitle.value = note.title;
-                editor.value = note.content;
-                updateDocumentTitle();
-                renderNotesList();
-                updateWordCount();
-                
-                // Reset history for new note
-                history = [{
-                    content: note.content,
-                    cursorPos: 0
-                }];
-                historyIndex = 0;
-                updateUndoRedoButtons();
+                 // Selalu simpan note sebelumnya jika ID berubah
+                 if (currentNoteId && currentNoteId !== noteId) {
+                     saveCurrentNoteData();
+                 }
+
+                 currentNoteId = noteId;
+                 localStorage.setItem('lastOpenedNoteId', noteId); // Ingat note terakhir dibuka
+
+                 ignoreInputEvent = true; // Flag agar perubahan ini tidak trigger input event
+                 noteTitle.value = note.title;
+                 editor.value = note.content;
+                 setTimeout(() => ignoreInputEvent = false, 10); // Reset flag shortly after
+
+                 updateDocumentTitle();
+                 updateWordCount();
+                 loadPreferences(); // Reload font preferences (jika ada setting per note di masa depan)
+
+                 // Reset history untuk note yang baru dibuka
+                 history = [{ content: note.content, cursorPos: 0 }]; // State awal
+                 historyIndex = 0;
+                 updateUndoRedoButtons();
+
+                 renderNotesList(); // Update highlight 'active' di sidebar
+
+                 // Reset search in editor
+                 resetEditorSearch();
+                 editor.scrollTop = 0; // Scroll editor ke atas
+            } else {
+                 console.error("Note not found:", noteId);
+                 // Jika note tidak ditemukan (misal: korup), load note pertama atau buat baru
+                 currentNoteId = null; // Reset current ID
+                 localStorage.removeItem('lastOpenedNoteId');
+                 if (notes.length > 0) {
+                     // Load note terbaru jika ID yg diminta tidak ada
+                     const latestNote = [...notes].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0];
+                     loadNote(latestNote.id);
+                 } else {
+                     createNewNote();
+                 }
+                 showToast("Catatan yang diminta tidak ditemukan.", true);
             }
         }
 
-        // Save current note with throttling
+        // Fungsi untuk menyimpan data note saat ini ke array `notes` (tanpa UI save)
+        function saveCurrentNoteData(forceUpdateTimestamp = false) {
+             if (currentNoteId) {
+                const noteIndex = notes.findIndex(n => n.id === currentNoteId);
+                if (noteIndex !== -1) {
+                    const currentTitle = noteTitle.value;
+                    const currentContent = editor.value;
+                    const needsUpdate = notes[noteIndex].title !== currentTitle ||
+                                        notes[noteIndex].content !== currentContent ||
+                                        forceUpdateTimestamp; // Perlu update jika ada perubahan atau dipaksa
+
+                    if (needsUpdate) {
+                        notes[noteIndex].title = currentTitle;
+                        notes[noteIndex].content = currentContent;
+                        notes[noteIndex].updatedAt = new Date().toISOString();
+                        if (saveNotesToStorage()) { // Coba simpan
+                             // Update list hanya jika berhasil disimpan & ada perubahan
+                             renderNotesList();
+                        }
+                         updateDocumentTitle(); // Update judul window jika judul note berubah
+                    }
+                }
+             }
+        }
+
+
+        // Fungsi yang dipanggil oleh tombol Simpan atau Ctrl+S (dengan UI feedback)
         function saveNote() {
             if (!currentNoteId || isSaving) return;
-            
             isSaving = true;
             showSavingStatus();
-            
-            const noteIndex = notes.findIndex(n => n.id === currentNoteId);
-            if (noteIndex !== -1) {
-                notes[noteIndex].title = noteTitle.value;
-                notes[noteIndex].content = editor.value;
-                notes[noteIndex].updatedAt = new Date().toISOString();
-                
-                try {
-                    saveNotes();
-                    renderNotesList();
-                    showToast('Catatan tersimpan!');
-                } catch (e) {
-                    console.error("Error saving note:", e);
-                    showToast('Gagal menyimpan catatan', true);
-                }
-            }
-            
+
+            // Gunakan forceUpdateTimestamp = true untuk memastikan timestamp diperbarui
+            // dan perubahan terakhir (meski hanya cursor move) 'terasa' tersimpan
+            saveCurrentNoteData(true);
+
+            // Paksa simpan state terakhir ke history juga
+             saveHistory(true);
+
             setTimeout(() => {
                 isSaving = false;
                 hideSavingStatus();
-            }, 300);
+                showToast('Catatan tersimpan!');
+            }, 300); // Delay singkat untuk UI
         }
 
-        // Auto-save with throttling and memory management
         function startAutoSave() {
             if (autoSaveInterval) clearInterval(autoSaveInterval);
-            
+            // Simpan secara periodik jika ada perubahan (tanpa force timestamp update)
             autoSaveInterval = setInterval(() => {
                 if (currentNoteId && !isSaving) {
-                    const noteIndex = notes.findIndex(n => n.id === currentNoteId);
-                    if (noteIndex !== -1 && 
-                        (notes[noteIndex].title !== noteTitle.value || 
-                         notes[noteIndex].content !== editor.value)) {
-                        saveNote();
-                    }
+                    saveCurrentNoteData(false);
                 }
-                
-                // Periodically clean up memory
-                if (notes.length > 100) {
-                    notes = notes.slice(0, 100);
-                    saveNotes();
-                    renderNotesList();
-                }
-            }, 5000); // Save every 5 seconds
+            }, 5000); // Simpan setiap 5 detik jika ada perubahan potensial
         }
 
-        // Delete a note
         function deleteNote(noteId) {
-            if (notes.length <= 1) {
-                showToast('Anda harus memiliki setidaknya satu catatan', true);
+            if (notes.length <= 1 && notes[0].id === noteId) {
+                showToast('Tidak dapat menghapus satu-satunya catatan.', true);
                 return;
             }
-            
-            if (confirm('Apakah Anda yakin ingin menghapus catatan ini?')) {
-                notes = notes.filter(note => note.id !== noteId);
-                saveNotes();
-                
-                if (currentNoteId === noteId) {
-                    // Load the first available note after deletion
-                    currentNoteId = notes.length > 0 ? notes[0].id : null;
-                    if (currentNoteId) {
-                        loadNote(currentNoteId);
+
+            const noteIndex = notes.findIndex(n => n.id === noteId);
+            if (noteIndex === -1) return; // Note sudah tidak ada
+
+            const noteToDelete = notes[noteIndex];
+             const noteTitleDisplay = noteToDelete.title.trim() || 'Tanpa Judul';
+
+            if (confirm(`Apakah Anda yakin ingin menghapus catatan "${noteTitleDisplay}"?`)) {
+                notes.splice(noteIndex, 1); // Hapus dari array
+
+                if (saveNotesToStorage()) { // Coba simpan perubahan
+                    showToast(`Catatan "${noteTitleDisplay}" dihapus`);
+
+                    if (currentNoteId === noteId) {
+                        // Load note terdekat (biasanya yang terbaru setelah dihapus)
+                         localStorage.removeItem('lastOpenedNoteId');
+                        currentNoteId = null; // Reset ID
+                        if (notes.length > 0) {
+                            const latestNote = [...notes].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0];
+                            loadNote(latestNote.id);
+                        } else {
+                             // Jika ini note terakhir & berhasil dihapus (seharusnya tidak terjadi karena cek di awal)
+                             createNewNote();
+                        }
                     } else {
-                        createNewNote();
+                         renderNotesList(); // Update list jika note yg aktif tidak dihapus
                     }
+                } else {
+                     // Jika gagal menyimpan (misal: storage penuh), kembalikan note yang dihapus
+                     notes.splice(noteIndex, 0, noteToDelete);
+                     showToast('Gagal menghapus catatan. Penyimpanan mungkin bermasalah.', true);
                 }
-                
-                renderNotesList();
-                showToast('Catatan dihapus');
             }
         }
 
-        // Save all notes to localStorage with error handling
-        function saveNotes() {
+        function saveNotesToStorage() {
             try {
                 localStorage.setItem('notes', JSON.stringify(notes));
                 return true;
             } catch (e) {
                 console.error("Error saving notes to localStorage:", e);
-                
-                // If storage is full, try to clear some space
-                if (e.name === 'QuotaExceededError') {
-                    // Keep only the 50 most recent notes
-                    if (notes.length > 50) {
-                        notes = notes.slice(0, 50);
-                        try {
-                            localStorage.setItem('notes', JSON.stringify(notes));
-                            showToast('Penyimpanan penuh. Hanya 50 catatan terakhir disimpan', true);
-                            return true;
-                        } catch (e2) {
-                            console.error("Still can't save after cleanup:", e2);
-                        }
-                    }
+                if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+                     showToast('Gagal menyimpan! Penyimpanan penuh. Hapus beberapa catatan atau bersihkan data situs.', true);
+                     // TODO: Implementasi strategi pembersihan otomatis yang lebih canggih jika diperlukan
+                } else {
+                     showToast('Gagal menyimpan catatan. Terjadi kesalahan.', true);
                 }
-                
                 return false;
             }
         }
 
-        // Download current note
+        // === Download / Upload ===
         function downloadNote() {
-            if (!currentNoteId) return;
-            
+            if (!currentNoteId) return showToast("Pilih catatan untuk diunduh.", true);
             const note = notes.find(n => n.id === currentNoteId);
             if (note) {
                 const text = note.content;
-                const title = note.title.trim() || 'catatan';
-                const blob = new Blob([text], { type: 'text/plain' });
+                const title = (note.title.trim() || 'catatan-tanpa-judul').replace(/[/\\?%*:|"<>]/g, '-'); // Sanitasi nama file
+                const blob = new Blob([text], { type: 'text/plain;charset=utf-8' }); // Tentukan charset
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = `${title}.txt`;
+                document.body.appendChild(a); // Diperlukan di beberapa browser
                 a.click();
+                document.body.removeChild(a); // Hapus elemen setelah klik
                 URL.revokeObjectURL(url);
                 showToast('Catatan berhasil diunduh');
+            } else {
+                 showToast("Catatan tidak ditemukan untuk diunduh.", true);
             }
         }
 
-        // Upload a text file
         function uploadNote(event) {
             const file = event.target.files[0];
             if (!file) return;
-            
-            // Reset file input
+
+            // Reset input file agar bisa upload file yang sama lagi
             event.target.value = '';
-            
-            if (file.size > 5 * 1024 * 1024) { // 5MB limit
-                showToast('Ukuran file terlalu besar (maks 5MB)', true);
+
+            if (file.type !== 'text/plain') {
+                 showToast('Hanya file .txt yang didukung.', true);
+                 return;
+            }
+
+            // Batas ukuran file (misal 5MB)
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                showToast(`Ukuran file terlalu besar (maks ${maxSize / 1024 / 1024}MB)`, true);
                 return;
             }
 
@@ -1102,279 +1296,709 @@
             reader.onload = (e) => {
                 try {
                     const content = e.target.result;
-                    if (content.length > 2 * 1024 * 1024) { // 2MB content limit
-                        showToast('Konten file terlalu besar', true);
-                        return;
-                    }
-                    
-                    const newNote = {
-                        id: Date.now().toString(),
-                        title: file.name.replace('.txt', ''),
-                        content: content,
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString()
-                    };
-                    
-                    notes.unshift(newNote);
-                    saveNotes();
-                    loadNote(newNote.id);
-                    renderNotesList();
-                    showToast('File berhasil diunggah');
-                } catch (e) {
-                    showToast('Gagal memproses file', true);
+                     // Batasi konten juga jika perlu (misal 2 Juta karakter)
+                     const maxContentLength = 2 * 1000 * 1000;
+                     if (content.length > maxContentLength) {
+                         showToast(`Konten file terlalu panjang (maks ${maxContentLength/1000000} Juta karakter)`, true);
+                         return;
+                     }
+
+                     const title = file.name.replace(/\.txt$/i, ''); // Hapus ekstensi .txt
+                     createNewNote(content, title); // Gunakan createNewNote untuk menambahkannya
+                     showToast(`File "${file.name}" berhasil diunggah sebagai catatan baru`);
+
+                } catch (readError) {
+                    console.error("Error processing file content:", readError);
+                    showToast('Gagal memproses isi file.', true);
                 }
             };
-            reader.onerror = () => {
-                showToast('Gagal membaca file', true);
+            reader.onerror = (e) => {
+                console.error("Error reading file:", e);
+                showToast('Gagal membaca file.', true);
             };
-            reader.readAsText(file);
+            reader.readAsText(file, 'UTF-8'); // Baca sebagai teks UTF-8
         }
 
-        // Toggle sidebar with mobile support
+
+        // === UI Interaction (Sidebar, Theme, Font) ===
         function toggleSidebar() {
-            if (window.innerWidth <= 768) {
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) {
                 sidebar.classList.toggle('show-mobile');
             } else {
                 sidebar.classList.toggle('collapsed');
-                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+                const isCollapsed = sidebar.classList.contains('collapsed');
+                localStorage.setItem('sidebarCollapsed', isCollapsed);
+                // Sesuaikan margin main content
+                 document.querySelector('.main-content').style.marginLeft = isCollapsed ? '0' : 'var(--sidebar-width)';
             }
         }
 
-        // Toggle theme
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
             const isDarkMode = document.body.classList.contains('dark-mode');
             themeToggle.innerHTML = isDarkMode ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
             localStorage.setItem('theme', isDarkMode ? 'dark-mode' : 'light-mode');
-            
-            // Add animation to theme toggle
-            themeToggle.style.transform = 'scale(1.1) rotate(360deg)';
-            setTimeout(() => {
-                themeToggle.style.transform = '';
-            }, 500);
+
+            // Animasi kecil
+            themeToggle.style.transform = 'scale(1.1) rotate(15deg)';
+            setTimeout(() => themeToggle.style.transform = '', 300);
         }
 
-        // Font size functions
         function increaseFontSize() {
-            const currentSize = parseInt(window.getComputedStyle(editor).fontSize);
-            const newSize = Math.min(currentSize + 2, 28); // Max 28px
-            editor.style.fontSize = `${newSize}px`;
-            fontSizeDisplay.textContent = `${newSize}px`;
-            localStorage.setItem('editorFontSize', `${newSize}px`);
+            const currentSize = parseInt(editor.style.fontSize || window.getComputedStyle(editor).fontSize);
+            const newSize = Math.min(currentSize + 2, 32); // Max 32px
+            setFontSize(newSize);
         }
 
         function decreaseFontSize() {
-            const currentSize = parseInt(window.getComputedStyle(editor).fontSize);
-            const newSize = Math.max(currentSize - 2, 12); // Min 12px
-            editor.style.fontSize = `${newSize}px`;
-            fontSizeDisplay.textContent = `${newSize}px`;
-            localStorage.setItem('editorFontSize', `${newSize}px`);
+            const currentSize = parseInt(editor.style.fontSize || window.getComputedStyle(editor).fontSize);
+            const newSize = Math.max(currentSize - 2, 10); // Min 10px
+            setFontSize(newSize);
         }
 
-        // Font weight toggle
+         function setFontSize(size) {
+             const sizePx = `${size}px`;
+             editor.style.fontSize = sizePx;
+             fontSizeDisplay.textContent = sizePx;
+             localStorage.setItem('editorFontSize', sizePx);
+             // Simpan juga ke note saat ini? Opsional
+             // saveCurrentNoteData();
+         }
+
         function toggleFontWeight() {
-            if (editor.style.fontWeight === 'bold') {
-                editor.style.fontWeight = 'normal';
-                fontWeightBtn.classList.remove('active');
-            } else {
-                editor.style.fontWeight = 'bold';
-                fontWeightBtn.classList.add('active');
-            }
-            
-            localStorage.setItem('editorFontWeight', editor.style.fontWeight);
+            const newWeight = editor.style.fontWeight === 'bold' ? 'normal' : 'bold';
+            editor.style.fontWeight = newWeight;
+            fontWeightBtn.classList.toggle('active', newWeight === 'bold');
+            localStorage.setItem('editorFontWeight', newWeight);
+             // Simpan juga ke note saat ini? Opsional
+             // saveCurrentNoteData();
         }
 
-        // Copy text function
         function copyText() {
-            editor.select();
-            document.execCommand('copy');
-            
-            // Show feedback
-            const selection = window.getSelection();
-            selection.removeAllRanges();
-            
-            showToast('Teks berhasil disalin!');
+             if (!editor.value) {
+                 showToast('Tidak ada teks untuk disalin.', true);
+                 return;
+             }
+             navigator.clipboard.writeText(editor.value)
+                .then(() => {
+                    showToast('Seluruh teks berhasil disalin!');
+                    // Optional: visual feedback like flashing the button
+                    copyBtn.style.transform = 'scale(1.1)';
+                    copyBtn.style.backgroundColor = 'var(--toast-bg)';
+                    setTimeout(() => {
+                         copyBtn.style.transform = '';
+                         copyBtn.style.backgroundColor = ''; // Kembali ke style normal
+                    }, 300);
+                })
+                .catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    // Fallback attempt for older browsers/contexts without clipboard API access
+                    try {
+                         editor.select(); // Select the text
+                         const successful = document.execCommand('copy');
+                         if (successful) {
+                            showToast('Teks disalin (menggunakan metode lama).');
+                         } else {
+                            showToast('Gagal menyalin teks.', true);
+                         }
+                         window.getSelection().removeAllRanges(); // Deselect
+                    } catch (fallbackErr) {
+                         console.error('Fallback copy failed: ', fallbackErr);
+                         showToast('Gagal menyalin teks. Browser mungkin tidak mendukung.', true);
+                    }
+                });
         }
 
-        // Word count functions
+
+        // === Word Count ===
         function updateWordCount() {
-            const text = editor.value;
-            const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
-            const charCount = text.length;
-            
-            document.getElementById('wordCount').textContent = `${wordCount} kata`;
-            document.getElementById('charCount').textContent = `${charCount} karakter`;
+             const text = editor.value;
+             // Hitung kata: split berdasarkan spasi/newline/punctuation, filter elemen kosong
+             // Regex yang lebih baik untuk kata
+             const wordMatch = text.match(/\b[\w']+\b/g);
+             const wordCount = wordMatch ? wordMatch.length : 0;
+             const charCount = text.length;
+             wordCountEl.textContent = `${wordCount} kata`;
+             charCountEl.textContent = `${charCount} karakter`;
         }
 
-        // Show saving status
+        // === Toast & Save Status UI ===
         function showSavingStatus() {
+             saveStatus.style.display = 'flex'; // Pastikan terlihat
             saveStatus.classList.add('show');
         }
-
-        // Hide saving status
         function hideSavingStatus() {
             saveStatus.classList.remove('show');
+             // Sembunyikan lagi setelah transisi selesai jika perlu
+            // setTimeout(() => saveStatus.style.display = 'none', 300);
         }
-
-        // Show toast notification
+        let toastTimeout;
         function showToast(message, isError = false) {
-            const icon = isError ? '<i class="fas fa-exclamation-circle"></i>' : '<i class="fas fa-check-circle"></i>';
-            toast.innerHTML = `${icon} <span>${message}</span>`;
-            toast.className = isError ? 'toast error show' : 'toast show';
-            
-            setTimeout(() => {
-                toast.className = 'toast';
+             clearTimeout(toastTimeout); // Hapus toast sebelumnya jika ada
+            toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> <span>${message}</span>`;
+            toast.className = `toast ${isError ? 'error' : ''}`; // Hapus show dulu
+            // Trigger reflow sebelum menambah class show agar transisi jalan
+            void toast.offsetWidth;
+            toast.classList.add('show');
+
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
             }, 3000);
         }
 
-        // Update document title
+        // === Document Title ===
         function updateDocumentTitle() {
+            let title = 'Notepad Online';
             if (currentNoteId) {
                 const note = notes.find(n => n.id === currentNoteId);
-                if (note) {
-                    const title = note.title.trim() || 'Untitled';
-                    document.title = `${title}  - Notepad Online`;
-                    return;
-                }
+                 const noteTitleDisplay = note?.title?.trim();
+                if (noteTitleDisplay) {
+                    title = `${noteTitleDisplay} - Notepad Online`;
+                } else if (note) {
+                     title = `Tanpa Judul - Notepad Online`;
+                 }
             }
-            document.title = 'Notepad Online';
+            document.title = title;
         }
 
-        // Setup search functionality
-        function setupSearch() {
-            const searchInput = document.getElementById('searchNotes');
-            searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                const noteItems = document.querySelectorAll('.note-item');
-                
-                noteItems.forEach(item => {
-                    const title = item.querySelector('.note-title').textContent.toLowerCase();
-                    if (title.includes(searchTerm)) {
-                        item.style.display = 'flex';
-                    } else {
-                        item.style.display = 'none';
-                    }
-                });
+        // === Search in Sidebar ===
+        function setupSidebarSearch() {
+             // Debounce search input
+             let searchDebounceTimer;
+            searchNotesInput.addEventListener('input', () => {
+                 clearTimeout(searchDebounceTimer);
+                 searchDebounceTimer = setTimeout(() => {
+                    renderNotesList(); // Render ulang list berdasarkan input search
+                 }, 200); // Delay 200ms
             });
         }
 
-        // Setup event listeners
+        // === Fitur Baru: Auto Features & Editor Interactions ===
+
+        const PAIRS = { '(': ')', '[': ']', '{': '}', '"': '"', "'": "'" };
+        const CLOSING_CHARS = Object.values(PAIRS);
+
+        function handleEditorKeyDown(e) {
+             const cursorPos = editor.selectionStart;
+             const text = editor.value;
+             const charBefore = text[cursorPos - 1];
+             const charAfter = text[cursorPos];
+
+             // --- Auto Pairing ---
+             if (PAIRS[e.key]) {
+                 // Cek jika karakter setelahnya adalah penutup yang sama (untuk menimpa) atau whitespace/akhir baris
+                 if (e.key === charAfter && (e.key === '"' || e.key === "'")) {
+                    // Jika mengetik quote yang sama dengan setelah kursor, lewati saja
+                    e.preventDefault();
+                    editor.selectionStart = cursorPos + 1;
+                    editor.selectionEnd = cursorPos + 1;
+                    return; // Jangan proses lebih lanjut
+                 } else if (!charAfter || charAfter.match(/\s/) || CLOSING_CHARS.includes(charAfter)) {
+                     // Jika kosong, whitespace, atau karakter penutup lain setelahnya, lakukan pairing
+                    e.preventDefault();
+                    const closingChar = PAIRS[e.key];
+                    const newText = text.substring(0, cursorPos) + e.key + closingChar + text.substring(cursorPos);
+
+                    ignoreInputEvent = true;
+                    ignoreHistorySave = true;
+                    editor.value = newText;
+                    editor.selectionStart = cursorPos + 1;
+                    editor.selectionEnd = cursorPos + 1;
+                    setTimeout(() => {
+                        ignoreInputEvent = false;
+                        ignoreHistorySave = false;
+                        saveHistory(); // Simpan setelah auto pair
+                        updateWordCount();
+                    }, 10);
+                    return;
+                 }
+             }
+
+             // --- Auto Unpair (Backspace) ---
+             if (e.key === 'Backspace') {
+                const openChar = Object.keys(PAIRS).find(key => PAIRS[key] === charAfter);
+                // Jika karakter sebelum adalah pembuka dan karakter sesudah adalah penutup pasangannya
+                if (openChar && charBefore === openChar) {
+                    e.preventDefault();
+                     const newText = text.substring(0, cursorPos - 1) + text.substring(cursorPos + 1);
+                     ignoreInputEvent = true;
+                     ignoreHistorySave = true;
+                     editor.value = newText;
+                     editor.selectionStart = cursorPos - 1;
+                     editor.selectionEnd = cursorPos - 1;
+                     setTimeout(() => {
+                         ignoreInputEvent = false;
+                         ignoreHistorySave = false;
+                         saveHistory();
+                         updateWordCount();
+                     }, 10);
+                     return;
+                }
+             }
+
+
+             // --- Line Continuation & Auto List (Enter) ---
+             const currentLineStart = text.lastIndexOf('\n', cursorPos - 1) + 1;
+             const currentLineEnd = text.indexOf('\n', cursorPos);
+             const currentLine = text.substring(currentLineStart, currentLineEnd === -1 ? text.length : currentLineEnd);
+
+             // 1. Shift + Enter -> Normal Newline
+             if (e.key === 'Enter' && e.shiftKey) {
+                 // Biarkan default behavior (handled by browser)
+                 setTimeout(saveHistory, 50); // Simpan history setelah newline
+                 return; // Hentikan proses lebih lanjut di handler ini
+             }
+
+             // 2. Enter Key Logic
+             if (e.key === 'Enter' && !e.shiftKey) {
+                 const numberMatch = currentLine.match(/^(\s*)(\d+)\.\s*(.*)/);
+                 const bulletMatch = currentLine.match(/^(\s*)([-*])\s*(.*)/);
+                 const indentMatch = currentLine.match(/^(\s+)(.*)/); // Indentasi umum
+
+                 // Jika baris saat ini adalah list item (bernomor atau bullet)
+                 if (numberMatch || bulletMatch) {
+                     const prefix = numberMatch ? numberMatch[1] : bulletMatch[1]; // Indentasi
+                     const content = numberMatch ? numberMatch[3] : bulletMatch[3]; // Teks setelah list marker
+
+                     // Jika list item kosong, hapus list marker dan keluar dari list
+                     if (content.trim() === '') {
+                         e.preventDefault();
+                         const textBefore = text.substring(0, currentLineStart);
+                         const textAfter = text.substring(cursorPos); // Teks setelah kursor di baris itu
+                         const newText = textBefore + textAfter;
+
+                         ignoreInputEvent = true;
+                         ignoreHistorySave = true;
+                         editor.value = newText;
+                         editor.selectionStart = currentLineStart;
+                         editor.selectionEnd = currentLineStart;
+
+                         setTimeout(() => {
+                             ignoreInputEvent = false;
+                             ignoreHistorySave = false;
+                             saveHistory();
+                             updateWordCount();
+                         }, 10);
+                     } else {
+                         // Jika list item ada isinya, buat item baru di bawahnya
+                         e.preventDefault();
+                         let nextMarker;
+                         if (numberMatch) {
+                             const nextNum = parseInt(numberMatch[2]) + 1;
+                             nextMarker = `${prefix}${nextNum}. `;
+                         } else {
+                             nextMarker = `${prefix}${bulletMatch[2]} `;
+                         }
+                         const textBefore = text.substring(0, cursorPos);
+                         const textAfter = text.substring(cursorPos);
+                         const newText = `${textBefore}\n${nextMarker}${textAfter}`;
+
+                         ignoreInputEvent = true;
+                         ignoreHistorySave = true;
+                         editor.value = newText;
+                         editor.selectionStart = cursorPos + 1 + nextMarker.length; // Pindah kursor ke setelah marker baru
+                         editor.selectionEnd = cursorPos + 1 + nextMarker.length;
+
+                         setTimeout(() => {
+                             ignoreInputEvent = false;
+                             ignoreHistorySave = false;
+                             saveHistory();
+                             updateWordCount();
+                         }, 10);
+                     }
+                 } else if (indentMatch && indentMatch[2].trim() !== '') {
+                     // Jika bukan list tapi ada indentasi, teruskan indentasi ke baris baru
+                      e.preventDefault();
+                      const indent = indentMatch[1];
+                      const textBefore = text.substring(0, cursorPos);
+                      const textAfter = text.substring(cursorPos);
+                      const newText = `${textBefore}\n${indent}${textAfter}`;
+
+                      ignoreInputEvent = true;
+                      ignoreHistorySave = true;
+                      editor.value = newText;
+                      editor.selectionStart = cursorPos + 1 + indent.length;
+                      editor.selectionEnd = cursorPos + 1 + indent.length;
+
+                      setTimeout(() => {
+                         ignoreInputEvent = false;
+                         ignoreHistorySave = false;
+                         saveHistory();
+                         updateWordCount();
+                      }, 10);
+                 } else {
+                     // Jika bukan list dan tidak ada indentasi signifikan (atau baris kosong), Enter biasa
+                     setTimeout(saveHistory, 50); // Simpan history setelah newline
+                 }
+                 return; // Hentikan proses jika Enter sudah dihandle
+             }
+
+             // --- Tab Key for Indentation ---
+             if (e.key === 'Tab') {
+                 e.preventDefault();
+                 const indent = '    '; // 4 spasi untuk Tab
+                 const textBefore = text.substring(0, cursorPos);
+                 const textAfter = text.substring(cursorPos);
+                 const newText = textBefore + indent + textAfter;
+
+                 ignoreInputEvent = true;
+                 ignoreHistorySave = true;
+                 editor.value = newText;
+                 editor.selectionStart = cursorPos + indent.length;
+                 editor.selectionEnd = cursorPos + indent.length;
+                  setTimeout(() => {
+                     ignoreInputEvent = false;
+                     ignoreHistorySave = false;
+                     saveHistory();
+                     updateWordCount();
+                  }, 10);
+                 return;
+             }
+
+             // Jika tidak ada handler khusus, biarkan default dan simpan history
+             if (!e.ctrlKey && !e.metaKey && !e.altKey) { // Jangan simpan history untuk modifier keys saja
+                 setTimeout(saveHistory, 50);
+             }
+        }
+
+         // === Fitur Baru: Format Teks (Rapikan) ===
+         function formatText() {
+             if (!editor.value) return;
+
+             let originalText = editor.value;
+             let formattedText = originalText;
+
+             // 1. Trim whitespace dari setiap baris
+             formattedText = formattedText.split('\n').map(line => line.trim()).join('\n');
+
+             // 2. Ganti multiple spasi dengan satu spasi (kecuali di awal baris untuk indentasi)
+             formattedText = formattedText.split('\n').map(line => {
+                 const indentMatch = line.match(/^(\s*)/);
+                 const indent = indentMatch ? indentMatch[1] : '';
+                 const content = line.substring(indent.length);
+                 return indent + content.replace(/\s{2,}/g, ' ');
+             }).join('\n');
+
+             // 3. Hapus baris kosong berlebihan (maksimal satu baris kosong antar blok teks)
+             formattedText = formattedText.replace(/\n{3,}/g, '\n\n');
+
+             // 4. Hapus spasi/tab di akhir teks
+             formattedText = formattedText.trimEnd();
+
+             // 5. Pastikan ada satu newline di akhir jika teks tidak kosong
+             if (formattedText && !formattedText.endsWith('\n')) {
+                 formattedText += '\n';
+             }
+
+
+             if (formattedText !== originalText) {
+                 ignoreInputEvent = true;
+                 ignoreHistorySave = true;
+                 editor.value = formattedText;
+                 editor.scrollTop = 0; // Kembali ke atas setelah format
+                 editor.selectionStart = 0;
+                 editor.selectionEnd = 0;
+
+                 setTimeout(() => {
+                    ignoreInputEvent = false;
+                    ignoreHistorySave = false;
+                    saveHistory(true); // Paksa simpan history setelah format
+                    updateWordCount();
+                    saveCurrentNoteData(); // Simpan perubahan ke note
+                    showToast("Teks dirapikan!");
+                 }, 10);
+             } else {
+                 showToast("Teks sudah rapi.");
+             }
+         }
+
+        // === Fitur Baru: Search in Editor ===
+        function toggleEditorSearch() {
+            if (editorSearchBar.style.display === 'flex') {
+                hideEditorSearch();
+            } else {
+                showEditorSearch();
+            }
+        }
+
+        function showEditorSearch() {
+            editorSearchBar.style.display = 'flex';
+            editorSearchInput.focus();
+            editorSearchInput.select();
+             // Lakukan pencarian awal jika sudah ada teks di input
+             if (editorSearchInput.value) {
+                 findMatchesInEditor();
+             }
+        }
+
+        function hideEditorSearch() {
+            editorSearchBar.style.display = 'none';
+            resetEditorSearch(); // Hapus state dan highlight saat ditutup
+             editor.focus(); // Kembalikan fokus ke editor
+        }
+
+        function resetEditorSearch() {
+             editorSearchInput.value = '';
+             editorSearchState = { matches: [], currentIndex: -1, searchTerm: '', regex: null };
+             removeHighlights(); // Fungsi untuk menghapus highlight (jika ada)
+             updateSearchUI();
+             editor.focus(); // Kembalikan fokus ke editor
+        }
+
+        function findMatchesInEditor() {
+            const searchTerm = editorSearchInput.value;
+            if (!searchTerm) {
+                 resetEditorSearch(); // Reset jika search term kosong
+                 return;
+            }
+
+            if (searchTerm === editorSearchState.searchTerm) {
+                 // Jika term sama, tidak perlu cari ulang, cukup navigasi
+                 if (editorSearchState.matches.length > 0) {
+                     navigateToNextMatch();
+                 }
+                 return;
+            }
+
+            editorSearchState.searchTerm = searchTerm;
+             // 'gi' = global, case-insensitive
+             // Escape special regex characters in search term
+             const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+             editorSearchState.regex = new RegExp(escapedTerm, 'gi');
+             editorSearchState.matches = [];
+             editorSearchState.currentIndex = -1;
+
+             const text = editor.value;
+             let match;
+             while ((match = editorSearchState.regex.exec(text)) !== null) {
+                 editorSearchState.matches.push({
+                     index: match.index,
+                     length: match[0].length
+                 });
+             }
+
+             removeHighlights(); // Hapus highlight lama
+
+             if (editorSearchState.matches.length > 0) {
+                 editorSearchState.currentIndex = 0;
+                 highlightAndScrollToMatch(editorSearchState.currentIndex);
+             }
+             updateSearchUI();
+        }
+
+        function navigateToNextMatch() {
+            if (editorSearchState.matches.length === 0) return;
+            editorSearchState.currentIndex = (editorSearchState.currentIndex + 1) % editorSearchState.matches.length;
+            highlightAndScrollToMatch(editorSearchState.currentIndex);
+            updateSearchUI();
+        }
+
+        function navigateToPrevMatch() {
+            if (editorSearchState.matches.length === 0) return;
+            editorSearchState.currentIndex = (editorSearchState.currentIndex - 1 + editorSearchState.matches.length) % editorSearchState.matches.length;
+            highlightAndScrollToMatch(editorSearchState.currentIndex);
+            updateSearchUI();
+        }
+
+        // Highlight di textarea sulit dilakukan dengan `mark`. Kita akan gunakan selection.
+        function highlightAndScrollToMatch(index) {
+            if (index < 0 || index >= editorSearchState.matches.length) return;
+
+            const match = editorSearchState.matches[index];
+            const start = match.index;
+            const end = start + match.length;
+
+             editor.focus(); // Penting untuk selection
+             editor.scrollTop = editor.scrollHeight; // Scroll ke bawah dulu (hackish)
+             // Hitung posisi baris untuk scroll yang lebih baik
+            const textToMatch = editor.value.substring(0, start);
+            const lines = textToMatch.split('\n').length;
+             const avgLineHeight = editor.scrollHeight / (editor.value.split('\n').length || 1);
+             const scrollPosition = Math.max(0, (lines - 5) * avgLineHeight); // Scroll 5 baris sebelum match
+
+            editor.scrollTop = scrollPosition;
+
+            // Pakai timeout kecil agar scroll selesai sebelum selection
+            setTimeout(() => {
+                try {
+                    editor.setSelectionRange(start, end);
+                } catch (e) {
+                    console.error("Error setting selection range:", e);
+                }
+            }, 50);
+
+        }
+
+        function removeHighlights() {
+            // Karena kita pakai selection, cukup remove selection
+            try {
+                 if (document.activeElement === editor) { // Hanya jika editor fokus
+                    const currentPos = editor.selectionStart;
+                    editor.setSelectionRange(currentPos, currentPos); // Collapse selection
+                 }
+            } catch (e) { console.error("Error removing selection:", e); }
+        }
+
+        function updateSearchUI() {
+            const count = editorSearchState.matches.length;
+            if (count > 0) {
+                searchResultCount.textContent = `${editorSearchState.currentIndex + 1}/${count}`;
+                searchPrevBtn.disabled = false;
+                searchNextBtn.disabled = false;
+            } else {
+                searchResultCount.textContent = editorSearchState.searchTerm ? "0/0" : ""; // Tampilkan 0/0 jika ada search term tapi tidak ketemu
+                searchPrevBtn.disabled = true;
+                searchNextBtn.disabled = true;
+            }
+             // Highlight input jika tidak ada hasil
+            if (editorSearchState.searchTerm && count === 0) {
+                editorSearchInput.style.backgroundColor = 'rgba(255, 100, 100, 0.2)';
+            } else {
+                 editorSearchInput.style.backgroundColor = ''; // Kembali normal
+            }
+        }
+
+        // === Event Listeners Setup ===
         function setupEventListeners() {
-            // Toggle sidebar
+            // Sidebar Toggle
             menuToggleBtn.addEventListener('click', toggleSidebar);
-            
-            // Toggle theme
+            closeSidebarBtn.addEventListener('click', () => sidebar.classList.remove('show-mobile'));
+
+            // Theme Toggle
             themeToggle.addEventListener('click', toggleTheme);
-            
-            // Add new note buttons
-            addNoteBtn.addEventListener('click', createNewNote);
-            newNoteBtn.addEventListener('click', createNewNote);
-            
-            // Font size controls
-            increaseFontBtn.addEventListener('click', increaseFontSize);
-            decreaseFontBtn.addEventListener('click', decreaseFontSize);
-            
-            // Font weight toggle
-            fontWeightBtn.addEventListener('click', toggleFontWeight);
-            
-            // Copy button
-            copyBtn.addEventListener('click', copyText);
-            
-            // Undo/Redo buttons
-            undoBtn.addEventListener('click', undo);
-            redoBtn.addEventListener('click', redo);
-            
-            // Title input events
+
+            // Note Management Buttons
+            addNoteBtn.addEventListener('click', () => createNewNote()); // Tombol di sidebar
+            newNoteBtn.addEventListener('click', () => createNewNote()); // Tombol di toolbar
+
+            // Editor Input & Title Input
+            editor.addEventListener('input', (e) => {
+                if (ignoreInputEvent) return; // Skip jika perubahan dari script
+                updateWordCount();
+                saveHistory(); // Simpan ke history saat mengetik (debounced)
+                 // Tandai perlu auto-save (akan dijalankan oleh interval)
+            });
             noteTitle.addEventListener('input', () => {
                 updateDocumentTitle();
-                if (currentNoteId) {
-                    const noteIndex = notes.findIndex(n => n.id === currentNoteId);
-                    if (noteIndex !== -1) {
-                        notes[noteIndex].title = noteTitle.value;
-                        notes[noteIndex].updatedAt = new Date().toISOString();
-                        saveNotes();
-                        renderNotesList();
+                 // Langsung simpan judul saat berubah (debounced)
+                 clearTimeout(typingTimer);
+                 typingTimer = setTimeout(saveCurrentNoteData, 300);
+            });
+
+            // Toolbar Buttons
+            document.querySelector('.btn[onclick="saveNote()"]').addEventListener('click', saveNote); // Tombol simpan asli
+            undoBtn.addEventListener('click', undo);
+            redoBtn.addEventListener('click', redo);
+            searchBtn.addEventListener('click', toggleEditorSearch); // Tombol search di toolbar
+            formatTextBtn.addEventListener('click', formatText); // Tombol rapikan
+            fontWeightBtn.addEventListener('click', toggleFontWeight);
+            decreaseFontBtn.addEventListener('click', decreaseFontSize);
+            increaseFontBtn.addEventListener('click', increaseFontSize);
+            copyBtn.addEventListener('click', copyText);
+            document.querySelector('.btn[onclick="downloadNote()"]').addEventListener('click', downloadNote); // Tombol unduh asli
+            // Upload sudah dihandle onchange di HTML
+
+            // Editor Search Bar Buttons
+            editorSearchInput.addEventListener('input', findMatchesInEditor);
+            editorSearchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (e.shiftKey) {
+                        navigateToPrevMatch();
+                    } else {
+                        navigateToNextMatch();
                     }
+                } else if (e.key === 'Escape') {
+                    hideEditorSearch();
                 }
             });
-            
-            // Editor input events with throttling
-            editor.addEventListener('input', () => {
-                updateWordCount();
-                
-                if (currentNoteId) {
-                    const noteIndex = notes.findIndex(n => n.id === currentNoteId);
-                    if (noteIndex !== -1) {
-                        notes[noteIndex].content = editor.value;
-                        notes[noteIndex].updatedAt = new Date().toISOString();
-                        saveNotes();
-                        renderNotesList();
-                    }
-                }
-                
-                // Save history state after a short delay
-                clearTimeout(typingTimer);
-                typingTimer = setTimeout(() => {
-                    saveHistory();
-                }, 500);
-            });
-            
-            // Keyboard shortcuts
+            searchPrevBtn.addEventListener('click', navigateToPrevMatch);
+            searchNextBtn.addEventListener('click', navigateToNextMatch);
+            closeSearchBtn.addEventListener('click', hideEditorSearch);
+
+            // Editor specific keydown
+            editor.addEventListener('keydown', handleEditorKeyDown);
+
+            // Keyboard Shortcuts
             document.addEventListener('keydown', (e) => {
-                if ((e.ctrlKey || e.metaKey) && !e.altKey) {
+                 // Prioritaskan input search jika aktif
+                if (editorSearchBar.style.display === 'flex' && document.activeElement === editorSearchInput) {
+                    return; // Biarkan handler input search bekerja
+                }
+
+                const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+                const ctrlKey = isMac ? e.metaKey : e.ctrlKey; // Cmd on Mac, Ctrl elsewhere
+
+                if (ctrlKey) {
                     switch (e.key.toLowerCase()) {
-                        case 's':
+                        case 's': // Ctrl+S / Cmd+S -> Save
                             e.preventDefault();
                             saveNote();
                             break;
-                        case 'n':
+                        case 'n': // Ctrl+N / Cmd+N -> New Note
                             e.preventDefault();
                             createNewNote();
                             break;
-                        case 'b':
-                            e.preventDefault();
-                            toggleFontWeight();
-                            break;
-                        case 'z':
-                            if (e.shiftKey) {
-                                e.preventDefault();
-                                redo();
-                            } else {
+                        case 'z': // Ctrl+Z / Cmd+Z -> Undo
+                             // Redo di Mac seringkali Cmd+Shift+Z
+                             if (!e.shiftKey) {
                                 e.preventDefault();
                                 undo();
-                            }
+                             } else if (isMac) {
+                                 e.preventDefault();
+                                 redo();
+                             }
                             break;
-                        case 'y':
-                            e.preventDefault();
-                            redo();
+                        case 'y': // Ctrl+Y -> Redo (Windows/Linux)
+                             if (!isMac) {
+                                e.preventDefault();
+                                redo();
+                             }
                             break;
-                        case 'c':
-                            if (e.shiftKey) {
+                        case 'b': // Ctrl+B / Cmd+B -> Bold
+                             e.preventDefault();
+                             toggleFontWeight();
+                            break;
+                        case 'f': // Ctrl+F / Cmd+F -> Find in Editor
+                             e.preventDefault();
+                             showEditorSearch();
+                            break;
+                        case 'c': // Ctrl+Shift+C / Cmd+Shift+C -> Copy All
+                             if (e.shiftKey) {
                                 e.preventDefault();
                                 copyText();
-                            }
-                            break;
+                             }
+                             break;
+                        // Tambahkan shortcut lain jika perlu
                     }
-                }
+                } else if (e.key === 'Escape') {
+                     // Escape bisa untuk menutup search bar atau sidebar mobile
+                     if (editorSearchBar.style.display === 'flex') {
+                        hideEditorSearch();
+                     } else if (sidebar.classList.contains('show-mobile')) {
+                         sidebar.classList.remove('show-mobile');
+                     }
+                 }
             });
-            
-            // Setup search
-            setupSearch();
-            
-            // Close sidebar when clicking outside on mobile
-            document.addEventListener('click', (e) => {
-                if (window.innerWidth <= 768 && 
-                    !sidebar.contains(e.target) && 
-                    e.target !== menuToggleBtn) {
-                    sidebar.classList.remove('show-mobile');
-                }
-            });
+
+            // Window Resize Listener
+            window.addEventListener('resize', checkMobileView);
+
+             // Close sidebar on click outside (mobile)
+             document.addEventListener('click', (e) => {
+                 if (window.innerWidth <= 768 && sidebar.classList.contains('show-mobile')) {
+                     // Cek jika klik BUKAN di dalam sidebar ATAU pada tombol toggle
+                     if (!sidebar.contains(e.target) && !menuToggleBtn.contains(e.target)) {
+                         sidebar.classList.remove('show-mobile');
+                     }
+                 }
+             });
         }
 
-        // Initialize the app
-        window.addEventListener('DOMContentLoaded', () => {
-            init();
-        });
+        // === Run Initialization ===
+        init();
+
     </script>
 </body>
 </html>
