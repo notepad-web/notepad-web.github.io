@@ -30,8 +30,8 @@
             --text-color: #333333;
             --primary-color: #4a90e2;
             --secondary-color: #ffffff;
-            --gradient-start: #6c63ff;
-            --gradient-end: #4a90e2;
+            --gradient-start: #4a90e2;
+            --gradient-end: #64b9f1;
             --toast-bg: #4caf50;
             --error-bg: #f44336;
             --border-color: #e0e0e0;
@@ -46,7 +46,7 @@
             --text-color: #f0f0f0;
             --secondary-color: #2d2d2d;
             --gradient-start: #6c63ff;
-            --gradient-end: #4a90e2;
+            --gradient-end: #805fac;
             --toast-bg: #2e7d32;
             --error-bg: #c62828;
             --border-color: #444444;
@@ -888,7 +888,7 @@
                 const noteItem = document.createElement('div');
                 noteItem.className = `note-item ${note.id === currentNoteId ? 'active' : ''}`;
                 noteItem.innerHTML = `
-                    <div class="note-title">${note.title || 'Free'}</div>
+                    <div class="note-title">${note.title || 'Untitled'}</div>
                     <div class="note-date">${formatDate(note.updatedAt)}</div>
                     <button class="delete-btn" data-id="${note.id}">
                         <i class="fas fa-trash"></i>
@@ -1232,7 +1232,7 @@
             if (currentNoteId) {
                 const note = notes.find(n => n.id === currentNoteId);
                 if (note) {
-                    const title = note.title.trim() || 'Free';
+                    const title = note.title.trim() || 'Untitled';
                     document.title = `${title}  - Notepad Online`;
                     return;
                 }
