@@ -734,7 +734,7 @@
                      <button id="closeSearchBtn"><i class="fas fa-times"></i></button>
                  </div>
             </div>
-            <textarea class="editor" id="editor" placeholder="Mulai mengetik di sini... ✨\nFitur baru:\n- Ketik '1. ' lalu Enter untuk nomor otomatis.\n- Ketik '- ' atau '* ' lalu Enter untuk bullet otomatis.\n- Ketik ( [ { \" ' akan otomatis ditutup.\n- Shift+Enter untuk baris baru tanpa list.\n- Gunakan tombol 'Cari' & 'Rapikan' di toolbar." aria-label="Editor catatan"></textarea>
+            <textarea class="editor" id="editor" placeholder="Mulai mengetik di sini..."></textarea>
 
             <div class="footer">
                 <span id="wordCount">0 kata</span> |
@@ -1006,7 +1006,7 @@
 
              let hasVisibleNotes = false;
             sortedNotes.forEach(note => {
-                const noteTitleText = note.title.trim() || 'Tanpa Judul'; // Default title
+                const noteTitleText = note.title.trim() || 'Untitled'; // Default title
                 // Filter berdasarkan pencarian sidebar
                 if (searchTerm && !noteTitleText.toLowerCase().includes(searchTerm)) {
                     return; // Lewati note ini jika tidak cocok
@@ -1208,7 +1208,7 @@
             if (noteIndex === -1) return; // Note sudah tidak ada
 
             const noteToDelete = notes[noteIndex];
-             const noteTitleDisplay = noteToDelete.title.trim() || 'Tanpa Judul';
+             const noteTitleDisplay = noteToDelete.title.trim() || 'Untitled';
 
             if (confirm(`Apakah Anda yakin ingin menghapus catatan "${noteTitleDisplay}"?`)) {
                 notes.splice(noteIndex, 1); // Hapus dari array
@@ -1459,7 +1459,7 @@
                 if (noteTitleDisplay) {
                     title = `${noteTitleDisplay} - Notepad Online`;
                 } else if (note) {
-                     title = `Tanpa Judul - Notepad Online`;
+                     title = `Untitled - Notepad Online`;
                  }
             }
             document.title = title;
